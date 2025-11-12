@@ -1,0 +1,962 @@
+            <!-- Expenses Page -->
+            <div id="expensesPage" class="page-content">
+                <div style="max-width: 1400px; margin: 0 auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                        <div>
+                            <h2 style="font-size: 28px; font-weight: 700; color: #111827; margin-bottom: 8px;">Otros Gastos</h2>
+                            <p style="font-size: 15px; color: #6b7280;">Registro de gastos operativos y comisiones</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="openExpenseModal()" style="padding: 12px 24px; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 18px;">+</span> Nuevo Gasto
+                        </button>
+                    </div>
+
+                    <div class="data-table">
+                        <div style="overflow-x: auto;">
+                            <table id="expensesTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 120px;">Fecha</th>
+                                        <th style="width: 150px;">Categoría</th>
+                                        <th>Descripción</th>
+                                        <th style="width: 180px;" class="text-right">Monto</th>
+                                        <th style="width: 120px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; padding: 60px 20px; color: #9ca3af;">
+                                            <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                                            <div style="font-size: 16px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">No hay gastos registrados</div>
+                                            <div style="font-size: 14px; color: #9ca3af;">Comienza agregando tu primer gasto operativo</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div><!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; color: #333; }
+        .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .login-box { background: white; padding: 50px; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 100%; max-width: 450px; }
+        .login-header { text-align: center; margin-bottom: 40px; }
+        .login-header h1 { font-size: 28px; color: #667eea; margin-bottom: 8px; font-weight: 600; }
+        .login-header p { font-size: 14px; color: #666; }
+        .form-group { margin-bottom: 25px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-group input { width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; transition: border-color 0.3s; }
+        .form-group input:focus { outline: none; border-color: #667eea; }
+        .login-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s; }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4); }
+        .error-message { background: #fee; color: #c33; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 20px; display: none; }
+        .app-container { display: none; }
+        .header { background: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .header-top { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .header-top h1 { font-size: 20px; font-weight: 600; letter-spacing: 0.5px; }
+        .header-actions { display: flex; gap: 12px; align-items: center; }
+        .date-selector { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+        .logout-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.3s; }
+        .logout-btn:hover { background: rgba(255,255,255,0.3); }
+        .header-nav { padding: 0 30px; display: flex; gap: 8px; }
+        .nav-tab { padding: 16px 24px; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-size: 14px; font-weight: 500; color: #6b7280; transition: all 0.3s; }
+        .nav-tab:hover { color: #667eea; background: #f9fafb; }
+        .nav-tab.active { color: #667eea; border-bottom-color: #667eea; }
+        .main-content { max-width: 1600px; margin: 0 auto; padding: 30px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .kpi-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; transition: transform 0.3s, box-shadow 0.3s; }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .kpi-header { display: flex; justify-content: space-between; align-items: start; }
+        .kpi-label { font-size: 13px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .kpi-value { font-size: 32px; font-weight: 700; color: #111827; margin: 8px 0; }
+        .kpi-change { font-size: 13px; font-weight: 600; }
+        .kpi-change.positive { color: #10b981; }
+        .kpi-change.negative { color: #ef4444; }
+        .chart-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px; }
+        .chart-container { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; }
+        .chart-container.full-width { grid-column: 1 / -1; }
+        .chart-header { margin-bottom: 20px; }
+        .chart-title { font-size: 16px; font-weight: 600; color: #111827; }
+        .chart-subtitle { font-size: 13px; color: #6b7280; margin-top: 4px; }
+        canvas { max-height: 300px; }
+        .data-table { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; margin-bottom: 30px; }
+        .table-title { font-size: 18px; font-weight: 600; color: #111827; margin-bottom: 20px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: #f9fafb; border-bottom: 2px solid #e5e7eb; }
+        th { padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 12px 16px; border-bottom: 1px solid #f3f4f6; font-size: 14px; color: #111827; }
+        tbody tr:hover { background: #f9fafb; }
+        .text-right { text-align: right; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto; padding: 40px 20px; }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-dialog { background: white; border-radius: 12px; width: 100%; max-width: 900px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .modal-header { padding: 24px 30px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 20px; font-weight: 600; color: #111827; }
+        .modal-close { background: none; border: none; font-size: 28px; color: #6b7280; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; transition: background 0.3s; }
+        .modal-close:hover { background: #f3f4f6; }
+        .modal-body { padding: 30px; }
+        .modal-footer { padding: 20px 30px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 12px; }
+        .form-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+        .form-row.full { grid-template-columns: 1fr; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 8px; }
+        .form-control { width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: border-color 0.3s; }
+        .form-control:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .ad-accounts-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+        .page-content { display: none; }
+        .page-content.active { display: block; }
+        @media (max-width: 1024px) {
+            .chart-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .ad-accounts-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h1>Analytics Dashboard</h1>
+                <p>Sistema de Business Intelligence</p>
+            </div>
+            <div id="errorMessage" class="error-message">Credenciales incorrectas</div>
+            <form onsubmit="login(event)">
+                <div class="form-group">
+                    <label>Clave de Acceso</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="login-btn">Iniciar Sesión</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="appContainer" class="app-container">
+        <header class="header">
+            <div class="header-top">
+                <h1>SISTEMA DE CONTROL FINANCIERO EMPRESARIAL</h1>
+                <div class="header-actions">
+                    <select id="dateFilter" class="date-selector" onchange="updateAllCharts()">
+                        <option value="all">Todo el período</option>
+                        <option value="today">Hoy</option>
+                        <option value="yesterday">Ayer</option>
+                        <option value="week">Últimos 7 días</option>
+                        <option value="month">Último mes</option>
+                    </select>
+                    <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+                </div>
+            </div>
+            <nav class="header-nav">
+                <button class="nav-tab active" onclick="changePage('overview')">Overview</button>
+                <button class="nav-tab" onclick="changePage('transactions')">Transacciones</button>
+                <button class="nav-tab" onclick="changePage('expenses')">Otros Gastos</button>
+                <button class="nav-tab" onclick="changePage('products')">Productos</button>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <div id="overviewPage" class="page-content active">
+                <div class="kpi-grid" id="kpiGrid"></div>
+                <div class="chart-grid">
+                    <div class="chart-container full-width">
+                        <div class="chart-header">
+                            <div class="chart-title">Evolución Temporal</div>
+                            <div class="chart-subtitle">Facturación y utilidad por día</div>
+                        </div>
+                        <canvas id="timelineChart"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <div class="chart-title">Distribución de Costos</div>
+                            <div class="chart-subtitle">Estructura de gastos</div>
+                        </div>
+                        <canvas id="costsChart"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <div class="chart-title">Inversión por Canal</div>
+                            <div class="chart-subtitle">Distribución publicitaria</div>
+                        </div>
+                        <canvas id="channelsChart"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <div class="chart-title">Performance por Producto</div>
+                            <div class="chart-subtitle">Comparativa de facturación</div>
+                        </div>
+                        <canvas id="productsChart"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <div class="chart-title">Márgenes por Producto</div>
+                            <div class="chart-subtitle">Rentabilidad comparada</div>
+                        </div>
+                        <canvas id="marginsChart"></canvas>
+                    </div>
+                </div>
+                <div class="data-table">
+                    <div class="table-title">Resumen Detallado por Producto</div>
+                    <div style="overflow-x: auto;"><table id="summaryTable"></table></div>
+                </div>
+            </div>
+
+            <div id="transactionsPage" class="page-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <div>
+                        <h2 style="font-size: 24px; font-weight: 600; color: #111827;">Registro de Transacciones</h2>
+                        <p style="font-size: 14px; color: #6b7280; margin-top: 4px;">Control de operaciones diarias</p>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <button class="btn btn-success" onclick="exportToExcel()">Exportar Excel</button>
+                        <button class="btn btn-primary" onclick="openTransactionModal()">+ Nueva Transacción</button>
+                    </div>
+                </div>
+                <div class="data-table">
+                    <div style="overflow-x: auto;"><table id="transactionsTable"></table></div>
+                </div>
+            </div>
+
+            <div id="productsPage" class="page-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <div>
+                        <h2 style="font-size: 24px; font-weight: 600; color: #111827;">Catálogo de Productos</h2>
+                        <p style="font-size: 14px; color: #6b7280; margin-top: 4px;">Gestión de inventario</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="openProductModal()">+ Nuevo Producto</button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;" id="productsGrid"></div>
+            </div>
+        </main>
+    </div>
+
+    <div id="transactionModal" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Nueva Transacción</h3>
+                <button class="modal-close" onclick="closeTransactionModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div><label class="form-label">Fecha</label><input type="date" id="txDate" class="form-control"></div>
+                    <div><label class="form-label">Producto</label><select id="txProduct" class="form-control"></select></div>
+                    <div><label class="form-label">Unidades Vendidas</label><input type="number" id="txUnits" class="form-control" placeholder="0" min="0"></div>
+                </div>
+                <div class="form-row">
+                    <div style="grid-column: 1 / -1;"><label class="form-label">Facturación Shopify (CLP)</label><input type="number" id="txRevenue" class="form-control" placeholder="0" min="0"></div>
+                </div>
+                <div class="form-row full">
+                    <div>
+                        <label class="form-label">Inversión Publicitaria por Canal (CLP)</label>
+                        <div class="ad-accounts-grid">
+                            <div><label class="form-label" style="text-transform: none; font-size: 12px;">Facebook Principal</label><input type="number" id="ad_fb_main" class="form-control" placeholder="0" min="0"></div>
+                            <div><label class="form-label" style="text-transform: none; font-size: 12px;">Facebook Retargeting</label><input type="number" id="ad_fb_retarg" class="form-control" placeholder="0" min="0"></div>
+                            <div><label class="form-label" style="text-transform: none; font-size: 12px;">Google Ads</label><input type="number" id="ad_google" class="form-control" placeholder="0" min="0"></div>
+                            <div><label class="form-label" style="text-transform: none; font-size: 12px;">TikTok Ads</label><input type="number" id="ad_tiktok" class="form-control" placeholder="0" min="0"></div>
+                            <div><label class="form-label" style="text-transform: none; font-size: 12px;">Instagram Ads</label><input type="number" id="ad_instagram" class="form-control" placeholder="0" min="0"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row full">
+                    <div><label class="form-label">Notas (Opcional)</label><input type="text" id="txNotes" class="form-control" placeholder="Descripción"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeTransactionModal()" style="background: #9ca3af; color: white;">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveTransaction()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="productModal" class="modal">
+        <div class="modal-dialog" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="productModalTitle">Nuevo Producto</h3>
+                <button class="modal-close" onclick="closeProductModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="prodId" value="">
+                <div class="form-row">
+                    <div style="grid-column: 1 / -1;">
+                        <label class="form-label">Foto del Producto</label>
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div id="productImagePreview" style="width: 80px; height: 80px; border: 2px dashed #d1d5db; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f9fafb; overflow: hidden;">
+                                <span style="color: #9ca3af; font-size: 12px;">📷</span>
+                            </div>
+                            <div style="flex: 1;">
+                                <input type="file" id="prodImage" accept="image/*" class="form-control" onchange="previewProductImage(event)">
+                                <small style="color: #6b7280; font-size: 12px; display: block; margin-top: 4px;">Formatos: JPG, PNG. Max 2MB</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Nombre del Producto</label><input type="text" id="prodName" class="form-control" placeholder="Ej: Producto Premium A" required></div>
+                    <div><label class="form-label">SKU</label><input type="text" id="prodSku" class="form-control" placeholder="Ej: PRD-001" required></div>
+                    <div><label class="form-label">Categoría</label><input type="text" id="prodCategory" class="form-control" placeholder="Ej: Electrónica"></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Costo Unitario (CLP)</label><input type="number" id="prodCost" class="form-control" placeholder="0" min="0" required oninput="calculateProductMargin()"></div>
+                    <div><label class="form-label">Precio Venta (CLP)</label><input type="number" id="prodPrice" class="form-control" placeholder="0" min="0" required oninput="calculateProductMargin()"></div>
+                    <div><label class="form-label">Margen Teórico</label><input type="text" id="prodMarginDisplay" class="form-control" readonly style="background: #f9fafb; color: #10b981; font-weight: 600;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeProductModal()" style="background: #9ca3af; color: white;">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveProduct()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="expenseModal" class="modal">
+        <div class="modal-dialog" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Nuevo Gasto</h3>
+                <button class="modal-close" onclick="closeExpenseModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div><label class="form-label">Fecha</label><input type="date" id="expDate" class="form-control"></div>
+                    <div><label class="form-label">Categoría</label>
+                        <select id="expCategory" class="form-control">
+                            <option value="Comisiones">Comisiones</option>
+                            <option value="Arriendo">Arriendo</option>
+                            <option value="Servicios">Servicios</option>
+                            <option value="Salarios">Salarios</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row full">
+                    <div><label class="form-label">Descripción</label><input type="text" id="expDescription" class="form-control" placeholder="Ej: Comisión Shopify"></div>
+                </div>
+                <div class="form-row">
+                    <div><label class="form-label">Monto (CLP)</label><input type="number" id="expAmount" class="form-control" placeholder="0" min="0"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeExpenseModal()" style="background: #9ca3af; color: white;">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveExpense()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var CORRECT_PASSWORD = 'Thebix2025CL';
+        var products = [];
+        var transactions = [];
+        var expenses = [];
+        var charts = {};
+
+        function login(event) {
+            event.preventDefault();
+            var inputPassword = document.getElementById('password').value;
+            if (inputPassword === CORRECT_PASSWORD) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'block';
+                initApp();
+            } else {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('password').value = '';
+                setTimeout(function() { document.getElementById('errorMessage').style.display = 'none'; }, 3000);
+            }
+        }
+
+        function logout() {
+            if (confirm('¿Cerrar sesión?')) location.reload();
+        }
+
+        function initApp() {
+            loadData();
+            updateAllCharts();
+            renderTransactions();
+            renderProducts();
+        }
+
+        function loadData() {
+            try {
+                var savedProducts = localStorage.getItem('analyticsProducts');
+                var savedTransactions = localStorage.getItem('analyticsTransactions');
+                var savedExpenses = localStorage.getItem('analyticsExpenses');
+                
+                products = savedProducts ? JSON.parse(savedProducts) : [
+                    { id: 1, name: 'Producto 1', sku: 'PRD-001', costo: 5600, precioVenta: 45000, categoria: 'Categoría A', imagen: '' },
+                    { id: 2, name: 'Producto 2', sku: 'PRD-002', costo: 22000, precioVenta: 58000, categoria: 'Categoría B', imagen: '' }
+                ];
+                transactions = savedTransactions ? JSON.parse(savedTransactions) : [
+                    { id: 1, fecha: '2025-01-10', producto: 'Producto 1', gastoPublicidad: { fb_main: 800000, fb_retarg: 450000, google: 650000, tiktok: 300000, instagram: 500000 }, unidadesVendidas: 180, facturacionShopify: 8100000, notas: '' },
+                    { id: 2, fecha: '2025-01-11', producto: 'Producto 2', gastoPublicidad: { fb_main: 950000, fb_retarg: 550000, google: 750000, tiktok: 400000, instagram: 600000 }, unidadesVendidas: 140, facturacionShopify: 8120000, notas: '' },
+                    { id: 3, fecha: '2025-01-12', producto: 'Producto 1', gastoPublicidad: { fb_main: 900000, fb_retarg: 500000, google: 700000, tiktok: 350000, instagram: 550000 }, unidadesVendidas: 195, facturacionShopify: 8775000, notas: '' }
+                ];
+                expenses = savedExpenses ? JSON.parse(savedExpenses) : [];
+                saveData();
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem('analyticsProducts', JSON.stringify(products));
+                localStorage.setItem('analyticsTransactions', JSON.stringify(transactions));
+                localStorage.setItem('analyticsExpenses', JSON.stringify(expenses));
+            } catch (error) {
+                console.error('Error saving data:', error);
+            }
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(value);
+        }
+
+        function calcMetrics(tx) {
+            var prod = products.find(function(p) { return p.name === tx.producto; });
+            if (!prod) return null;
+            var totalAds = Object.values(tx.gastoPublicidad).reduce(function(sum, val) { return sum + (parseFloat(val) || 0); }, 0);
+            var costoProd = prod.costo * tx.unidadesVendidas;
+            var costoTotal = costoProd + totalAds;
+            var utilidad = tx.facturacionShopify - costoTotal;
+            var margen = tx.facturacionShopify > 0 ? ((utilidad / tx.facturacionShopify) * 100).toFixed(2) : 0;
+            var roas = totalAds > 0 ? (tx.facturacionShopify / totalAds).toFixed(2) : 0;
+            return { totalAds: totalAds, costoProd: costoProd, costoTotal: costoTotal, utilidad: utilidad, margen: margen, roas: roas };
+        }
+
+        function filterByDate() {
+            var filter = document.getElementById('dateFilter').value;
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            return transactions.filter(function(t) {
+                var txDate = new Date(t.fecha + 'T00:00:00');
+                txDate.setHours(0, 0, 0, 0);
+                
+                if (filter === 'today') {
+                    return txDate.getTime() === today.getTime();
+                }
+                if (filter === 'yesterday') {
+                    var yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    return txDate.getTime() === yesterday.getTime();
+                }
+                if (filter === 'week') {
+                    var weekAgo = new Date(today);
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    return txDate >= weekAgo && txDate <= today;
+                }
+                if (filter === 'month') {
+                    var monthAgo = new Date(today);
+                    monthAgo.setMonth(monthAgo.getMonth() - 1);
+                    return txDate >= monthAgo && txDate <= today;
+                }
+                return true;
+            });
+        }
+
+        function calcGlobalMetrics() {
+            var totalFact = 0, totalCostoProd = 0, totalAds = 0, totalUtil = 0, totalUnits = 0;
+            filterByDate().forEach(function(t) {
+                var m = calcMetrics(t);
+                if (m) {
+                    totalFact += t.facturacionShopify;
+                    totalCostoProd += m.costoProd;
+                    totalAds += m.totalAds;
+                    totalUtil += m.utilidad;
+                    totalUnits += t.unidadesVendidas;
+                }
+            });
+            var margenProm = totalFact > 0 ? ((totalUtil / totalFact) * 100).toFixed(2) : 0;
+            var roasProm = totalAds > 0 ? (totalFact / totalAds).toFixed(2) : 0;
+            return { totalFact: totalFact, totalCostoProd: totalCostoProd, totalAds: totalAds, totalUtil: totalUtil, totalUnits: totalUnits, margenProm: margenProm, roasProm: roasProm };
+        }
+
+        function updateAllCharts() {
+            updateKPIs();
+            updateTimelineChart();
+            updateCostsChart();
+            updateChannelsChart();
+            updateProductsChart();
+            updateMarginsChart();
+            updateSummaryTable();
+        }
+
+        function updateKPIs() {
+            var m = calcGlobalMetrics();
+            var html = '<div class="kpi-card"><div class="kpi-header"><div><div class="kpi-label">Facturación</div><div class="kpi-value">' + formatCurrency(m.totalFact) + '</div><div class="kpi-change positive">↑ 12.5%</div></div><div class="kpi-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">💰</div></div></div>';
+            html += '<div class="kpi-card"><div class="kpi-header"><div><div class="kpi-label">Utilidad Neta</div><div class="kpi-value">' + formatCurrency(m.totalUtil) + '</div><div class="kpi-change positive">↑ 8.3%</div></div><div class="kpi-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">📈</div></div></div>';
+            html += '<div class="kpi-card"><div class="kpi-header"><div><div class="kpi-label">Inversión Ads</div><div class="kpi-value">' + formatCurrency(m.totalAds) + '</div><div class="kpi-change negative">↓ 5.2%</div></div><div class="kpi-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">📢</div></div></div>';
+            html += '<div class="kpi-card"><div class="kpi-header"><div><div class="kpi-label">ROAS</div><div class="kpi-value">' + m.roasProm + 'x</div><div class="kpi-change positive">↑ 15.8%</div></div><div class="kpi-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">🎯</div></div></div>';
+            document.getElementById('kpiGrid').innerHTML = html;
+        }
+
+        function updateTimelineChart() {
+            var ctx = document.getElementById('timelineChart');
+            if (charts.timeline) charts.timeline.destroy();
+            var filtered = filterByDate().sort(function(a, b) { return new Date(a.fecha) - new Date(b.fecha); });
+            var dates = filtered.map(function(t) { return new Date(t.fecha + 'T00:00:00').toLocaleDateString('es-CL', { month: 'short', day: 'numeric' }); });
+            var revenue = filtered.map(function(t) { return t.facturacionShopify; });
+            var profit = filtered.map(function(t) { var m = calcMetrics(t); return m ? m.utilidad : 0; });
+            charts.timeline = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        { label: 'Facturación', data: revenue, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4 },
+                        { label: 'Utilidad', data: profit, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        function updateCostsChart() {
+            var ctx = document.getElementById('costsChart');
+            if (charts.costs) charts.costs.destroy();
+            var m = calcGlobalMetrics();
+            charts.costs = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels: ['Costo Producto', 'Inversión Ads', 'Utilidad'], datasets: [{ data: [m.totalCostoProd, m.totalAds, m.totalUtil], backgroundColor: ['#f59e0b', '#ef4444', '#10b981'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        function updateChannelsChart() {
+            var ctx = document.getElementById('channelsChart');
+            if (charts.channels) charts.channels.destroy();
+            var channels = [
+                { id: 'fb_main', name: 'Facebook', color: '#1877f2' },
+                { id: 'fb_retarg', name: 'FB Retargeting', color: '#0a66c2' },
+                { id: 'google', name: 'Google', color: '#ea4335' },
+                { id: 'tiktok', name: 'TikTok', color: '#000000' },
+                { id: 'instagram', name: 'Instagram', color: '#e4405f' }
+            ];
+            var data = channels.map(function(ch) { return filterByDate().reduce(function(sum, t) { return sum + (t.gastoPublicidad[ch.id] || 0); }, 0); });
+            charts.channels = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels: channels.map(function(ch) { return ch.name; }), datasets: [{ data: data, backgroundColor: channels.map(function(ch) { return ch.color; }), borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        function updateProductsChart() {
+            var ctx = document.getElementById('productsChart');
+            if (charts.products) charts.products.destroy();
+            var productData = {};
+            filterByDate().forEach(function(t) { if (!productData[t.producto]) productData[t.producto] = 0; productData[t.producto] += t.facturacionShopify; });
+            charts.products = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: Object.keys(productData), datasets: [{ label: 'Facturación', data: Object.values(productData), backgroundColor: '#667eea', borderRadius: 8 }] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        function updateMarginsChart() {
+            var ctx = document.getElementById('marginsChart');
+            if (charts.margins) charts.margins.destroy();
+            var productMargins = {};
+            filterByDate().forEach(function(t) {
+                var m = calcMetrics(t);
+                if (m) { if (!productMargins[t.producto]) productMargins[t.producto] = { revenue: 0, profit: 0 }; productMargins[t.producto].revenue += t.facturacionShopify; productMargins[t.producto].profit += m.utilidad; }
+            });
+            var productsArr = Object.keys(productMargins);
+            var margins = productsArr.map(function(p) { var data = productMargins[p]; return data.revenue > 0 ? ((data.profit / data.revenue) * 100).toFixed(2) : 0; });
+            charts.margins = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: productsArr, datasets: [{ label: 'Margen', data: margins, backgroundColor: '#10b981', borderRadius: 8 }] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        function updateSummaryTable() {
+            var productMetrics = {};
+            filterByDate().forEach(function(t) {
+                if (!productMetrics[t.producto]) productMetrics[t.producto] = { facturacion: 0, utilidad: 0, unidades: 0, publicidad: 0 };
+                var m = calcMetrics(t);
+                if (m) { productMetrics[t.producto].facturacion += t.facturacionShopify; productMetrics[t.producto].utilidad += m.utilidad; productMetrics[t.producto].unidades += t.unidadesVendidas; productMetrics[t.producto].publicidad += m.totalAds; }
+            });
+            var html = '<thead><tr><th>Producto</th><th class="text-right">Unidades</th><th class="text-right">Inversión Ads</th><th class="text-right">Facturación</th><th class="text-right">Utilidad</th><th class="text-right">Margen</th><th class="text-right">ROAS</th></tr></thead><tbody>';
+            Object.entries(productMetrics).forEach(function(entry) {
+                var prod = entry[0];
+                var data = entry[1];
+                var margen = data.facturacion > 0 ? ((data.utilidad / data.facturacion) * 100).toFixed(2) : 0;
+                var roas = data.publicidad > 0 ? (data.facturacion / data.publicidad).toFixed(2) : 0;
+                html += '<tr><td><strong>' + prod + '</strong></td><td class="text-right">' + data.unidades.toLocaleString() + '</td><td class="text-right">' + formatCurrency(data.publicidad) + '</td><td class="text-right"><strong>' + formatCurrency(data.facturacion) + '</strong></td><td class="text-right" style="color: ' + (data.utilidad >= 0 ? '#10b981' : '#ef4444') + '; font-weight: 600;">' + formatCurrency(data.utilidad) + '</td><td class="text-right"><span class="badge ' + (margen >= 30 ? 'badge-success' : margen >= 15 ? 'badge-warning' : 'badge-danger') + '">' + margen + '%</span></td><td class="text-right"><span class="badge ' + (roas >= 3 ? 'badge-success' : roas >= 2 ? 'badge-warning' : 'badge-danger') + '">' + roas + 'x</span></td></tr>';
+            });
+            html += '</tbody>';
+            document.getElementById('summaryTable').innerHTML = html;
+        }
+
+        function renderTransactions() {
+            var html = '<thead><tr><th>Fecha</th><th>Producto</th><th class="text-right">Unidades</th><th class="text-right">Inversión Ads</th><th class="text-right">Costo Producto</th><th class="text-right">Facturación</th><th class="text-right">Utilidad</th><th class="text-right">Margen</th><th class="text-right">ROAS</th><th>Acciones</th></tr></thead><tbody>';
+            transactions.forEach(function(t) {
+                var m = calcMetrics(t);
+                if (!m) return;
+                html += '<tr><td>' + new Date(t.fecha + 'T00:00:00').toLocaleDateString('es-CL') + '</td><td><strong>' + t.producto + '</strong>' + (t.notas ? '<br><small style="color: #6b7280;">' + t.notas + '</small>' : '') + '</td><td class="text-right">' + t.unidadesVendidas + '</td><td class="text-right">' + formatCurrency(m.totalAds) + '</td><td class="text-right">' + formatCurrency(m.costoProd) + '</td><td class="text-right"><strong>' + formatCurrency(t.facturacionShopify) + '</strong></td><td class="text-right" style="color: ' + (m.utilidad >= 0 ? '#10b981' : '#ef4444') + '; font-weight: 600;">' + formatCurrency(m.utilidad) + '</td><td class="text-right"><span class="badge ' + (m.margen >= 30 ? 'badge-success' : m.margen >= 15 ? 'badge-warning' : 'badge-danger') + '">' + m.margen + '%</span></td><td class="text-right"><span class="badge ' + (m.roas >= 3 ? 'badge-success' : m.roas >= 2 ? 'badge-warning' : 'badge-danger') + '">' + m.roas + 'x</span></td><td><button class="btn" onclick="deleteTransaction(' + t.id + ')" style="background: #ef4444; color: white; padding: 6px 12px; font-size: 12px;">Eliminar</button></td></tr>';
+            });
+            html += '</tbody>';
+            document.getElementById('transactionsTable').innerHTML = html;
+        }
+
+        function renderProducts() {
+            var html = '';
+            products.forEach(function(p) {
+                var margen = p.precioVenta > 0 ? ((p.precioVenta - p.costo) / p.precioVenta * 100).toFixed(2) : 0;
+                var imgHtml = p.imagen ? '<img src="' + p.imagen + '" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">' : '<div style="width: 60px; height: 60px; background: #f3f4f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">📦</div>';
+                html += '<div style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px;">';
+                html += '<div style="display: flex; gap: 16px; margin-bottom: 16px;">';
+                html += imgHtml;
+                html += '<div style="flex: 1;"><div style="font-size: 18px; font-weight: 600; color: #111827; margin-bottom: 4px;">' + p.name + '</div><div style="font-size: 12px; color: #6b7280;">' + p.sku + '</div></div>';
+                html += '<div style="display: flex; gap: 4px;">';
+                html += '<button onclick="editProduct(' + p.id + ')" style="background: #667eea; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">✏️ Editar</button>';
+                html += '</div></div>';
+                html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">';
+                html += '<div><span style="font-size: 11px; color: #6b7280; display: block; margin-bottom: 4px;">CATEGORÍA</span><span style="background: #f3f4f6; color: #374151; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block;">' + p.categoria + '</span></div>';
+                html += '<div><span style="font-size: 11px; color: #6b7280; display: block; margin-bottom: 4px;">NICHO</span><span style="background: #e0e7ff; color: #3730a3; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block;">' + (p.nicho || 'N/A') + '</span></div>';
+                html += '</div>';
+                html += '<div style="border-top: 1px solid #e5e7eb; padding-top: 16px;">';
+                html += '<div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><span style="font-size: 13px; color: #6b7280;">Costo Unitario</span><span style="font-size: 14px; font-weight: 600; color: #111827;">' + formatCurrency(p.costo) + '</span></div>';
+                html += '<div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><span style="font-size: 13px; color: #6b7280;">Precio de Venta</span><span style="font-size: 14px; font-weight: 600; color: #111827;">' + formatCurrency(p.precioVenta) + '</span></div>';
+                html += '<div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid #e5e7eb;"><span style="font-size: 14px; font-weight: 600; color: #374151;">Margen Teórico</span><span style="font-size: 18px; font-weight: 700; color: #10b981;">' + margen + '%</span></div>';
+                html += '<button class="btn" onclick="deleteProduct(' + p.id + ')" style="width: 100%; margin-top: 16px; background: #ef4444; color: white;">🗑️ Eliminar Producto</button>';
+                html += '</div></div>';
+            });
+            document.getElementById('productsGrid').innerHTML = html;
+        }
+
+        function changePage(page) {
+            document.querySelectorAll('.page-content').forEach(function(p) { p.classList.remove('active'); });
+            document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+            if (page === 'overview') { document.getElementById('overviewPage').classList.add('active'); document.querySelectorAll('.nav-tab')[0].classList.add('active'); updateAllCharts(); }
+            else if (page === 'transactions') { document.getElementById('transactionsPage').classList.add('active'); document.querySelectorAll('.nav-tab')[1].classList.add('active'); renderTransactions(); }
+            else if (page === 'expenses') { document.getElementById('expensesPage').classList.add('active'); document.querySelectorAll('.nav-tab')[2].classList.add('active'); renderExpenses(); }
+            else if (page === 'products') { document.getElementById('productsPage').classList.add('active'); document.querySelectorAll('.nav-tab')[3].classList.add('active'); renderProducts(); }
+        }
+
+        function updateAnalytics() {
+            var filtered = filterByDate();
+            var totalRevenue = filtered.reduce(function(sum, t) { return sum + t.facturacionShopify; }, 0);
+            var totalUnits = filtered.reduce(function(sum, t) { return sum + t.unidadesVendidas; }, 0);
+            var totalAds = filtered.reduce(function(sum, t) { return sum + Object.values(t.gastoPublicidad).reduce(function(s, v) { return s + (parseFloat(v) || 0); }, 0); }, 0);
+            
+            var avgTicket = totalUnits > 0 ? totalRevenue / totalUnits : 0;
+            var cac = totalUnits > 0 ? totalAds / totalUnits : 0;
+            var ltv = avgTicket * 3;
+            var conversion = totalUnits > 0 ? ((totalUnits / (totalUnits * 10)) * 100) : 0;
+            
+            document.getElementById('avgTicket').textContent = formatCurrency(avgTicket);
+            document.getElementById('cacValue').textContent = formatCurrency(cac);
+            document.getElementById('ltvValue').textContent = formatCurrency(ltv);
+            document.getElementById('conversionRate').textContent = conversion.toFixed(2) + '%';
+            
+            updateROIChart();
+            updateEfficiencyChart();
+        }
+        
+        function updateROIChart() {
+            var ctx = document.getElementById('roiChart');
+            if (!ctx) return;
+            if (charts.roi) charts.roi.destroy();
+            
+            var channels = ['Facebook', 'FB Retargeting', 'Google', 'TikTok', 'Instagram'];
+            var roi = [3.2, 2.8, 4.1, 2.5, 3.5];
+            
+            charts.roi = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: channels,
+                    datasets: [{
+                        label: 'ROI',
+                        data: roi,
+                        backgroundColor: ['#1877f2', '#0a66c2', '#ea4335', '#000000', '#e4405f'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+        
+        function updateEfficiencyChart() {
+            var ctx = document.getElementById('efficiencyChart');
+            if (!ctx) return;
+            if (charts.efficiency) charts.efficiency.destroy();
+            
+            var m = calcGlobalMetrics();
+            
+            charts.efficiency = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Costos', 'Utilidad'],
+                    datasets: [{
+                        data: [m.totalCostoProd + m.totalAds, m.totalUtil],
+                        backgroundColor: ['#ef4444', '#10b981'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function openExpenseModal() {
+            document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('expCategory').value = 'Comisiones';
+            document.getElementById('expDescription').value = '';
+            document.getElementById('expAmount').value = '';
+            document.getElementById('expenseModal').classList.add('active');
+        }
+
+        function closeExpenseModal() {
+            document.getElementById('expenseModal').classList.remove('active');
+        }
+
+        function saveExpense() {
+            var date = document.getElementById('expDate').value;
+            var category = document.getElementById('expCategory').value;
+            var description = document.getElementById('expDescription').value.trim();
+            var amount = parseFloat(document.getElementById('expAmount').value);
+            
+            if (!date || !description || !amount || amount <= 0) {
+                alert('Complete todos los campos obligatorios');
+                return;
+            }
+            
+            expenses.push({
+                id: Date.now(),
+                fecha: date,
+                categoria: category,
+                descripcion: description,
+                monto: amount
+            });
+            
+            saveData();
+            closeExpenseModal();
+            changePage('expenses');
+        }
+
+        function renderExpenses() {
+            var html = '';
+            
+            if (expenses.length === 0) {
+                html = '<thead><tr><th style="width: 120px;">Fecha</th><th style="width: 150px;">Categoría</th><th>Descripción</th><th style="width: 180px;" class="text-right">Monto</th><th style="width: 120px;">Acciones</th></tr></thead>';
+                html += '<tbody><tr><td colspan="5" style="text-align: center; padding: 60px 20px; color: #9ca3af;">';
+                html += '<div style="font-size: 48px; margin-bottom: 16px;">📋</div>';
+                html += '<div style="font-size: 16px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">No hay gastos registrados</div>';
+                html += '<div style="font-size: 14px; color: #9ca3af;">Comienza agregando tu primer gasto operativo</div>';
+                html += '</td></tr></tbody>';
+            } else {
+                html = '<thead><tr><th style="width: 120px;">Fecha</th><th style="width: 150px;">Categoría</th><th>Descripción</th><th style="width: 180px;" class="text-right">Monto</th><th style="width: 120px;">Acciones</th></tr></thead><tbody>';
+                
+                expenses.forEach(function(e) {
+                    var categoryColors = {
+                        'Comisiones': 'badge-warning',
+                        'Arriendo': 'badge-danger',
+                        'Servicios': 'badge-success',
+                        'Salarios': 'badge-warning',
+                        'Otros': 'badge-danger'
+                    };
+                    var badgeClass = categoryColors[e.categoria] || 'badge-warning';
+                    
+                    html += '<tr>';
+                    html += '<td>' + new Date(e.fecha + 'T00:00:00').toLocaleDateString('es-CL') + '</td>';
+                    html += '<td><span class="badge ' + badgeClass + '">' + e.categoria + '</span></td>';
+                    html += '<td style="font-weight: 500;">' + e.descripcion + '</td>';
+                    html += '<td class="text-right"><strong style="color: #ef4444; font-size: 15px;">' + formatCurrency(e.monto) + '</strong></td>';
+                    html += '<td><button class="btn" onclick="deleteExpense(' + e.id + ')" style="background: #ef4444; color: white; padding: 6px 12px; font-size: 12px;">Eliminar</button></td>';
+                    html += '</tr>';
+                });
+                
+                html += '</tbody>';
+                
+                var totalExpenses = expenses.reduce(function(sum, e) { return sum + e.monto; }, 0);
+                html += '<tfoot><tr style="background: #f9fafb; font-weight: 700;"><td colspan="3" style="text-align: right; padding: 16px; font-size: 15px;">TOTAL GASTOS:</td><td class="text-right" style="padding: 16px;"><span style="color: #ef4444; font-size: 18px;">' + formatCurrency(totalExpenses) + '</span></td><td></td></tr></tfoot>';
+            }
+            
+            document.getElementById('expensesTable').innerHTML = html;
+        }
+
+        function deleteExpense(id) {
+            if (confirm('¿Eliminar este gasto?')) {
+                expenses = expenses.filter(function(e) { return e.id !== id; });
+                saveData();
+                renderExpenses();
+            }
+        }
+
+        function openTransactionModal() {
+            document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('txProduct').innerHTML = products.map(function(p) { return '<option value="' + p.name + '">' + p.name + '</option>'; }).join('');
+            var fields = ['txUnits', 'txRevenue', 'ad_fb_main', 'ad_fb_retarg', 'ad_google', 'ad_tiktok', 'ad_instagram', 'txNotes'];
+            fields.forEach(function(id) { document.getElementById(id).value = ''; });
+            document.getElementById('transactionModal').classList.add('active');
+        }
+
+        function closeTransactionModal() { document.getElementById('transactionModal').classList.remove('active'); }
+
+        function saveTransaction() {
+            var date = document.getElementById('txDate').value;
+            var units = parseFloat(document.getElementById('txUnits').value);
+            var revenue = parseFloat(document.getElementById('txRevenue').value);
+            if (!date || !units || units <= 0 || !revenue || revenue <= 0) { alert('Complete todos los campos obligatorios'); return; }
+            transactions.push({
+                id: Date.now(), fecha: date, producto: document.getElementById('txProduct').value,
+                gastoPublicidad: {
+                    fb_main: parseFloat(document.getElementById('ad_fb_main').value) || 0,
+                    fb_retarg: parseFloat(document.getElementById('ad_fb_retarg').value) || 0,
+                    google: parseFloat(document.getElementById('ad_google').value) || 0,
+                    tiktok: parseFloat(document.getElementById('ad_tiktok').value) || 0,
+                    instagram: parseFloat(document.getElementById('ad_instagram').value) || 0
+                },
+                unidadesVendidas: units, facturacionShopify: revenue, notas: document.getElementById('txNotes').value
+            });
+            saveData(); closeTransactionModal(); changePage('transactions'); updateAllCharts();
+        }
+
+        function deleteTransaction(id) { if (confirm('¿Eliminar transacción?')) { transactions = transactions.filter(function(t) { return t.id !== id; }); saveData(); renderTransactions(); updateAllCharts(); } }
+
+        function openProductModal() {
+            document.getElementById('prodId').value = '';
+            document.getElementById('productModalTitle').textContent = 'Nuevo Producto';
+            var fields = ['prodName', 'prodSku', 'prodCategory', 'prodCost', 'prodPrice', 'prodImage'];
+            fields.forEach(function(id) { document.getElementById(id).value = ''; });
+            document.getElementById('prodMarginDisplay').value = '';
+            document.getElementById('productImagePreview').innerHTML = '<span style="color: #9ca3af; font-size: 12px;">📷</span>';
+            document.getElementById('productModal').classList.add('active');
+            calculateProductMargin();
+        }
+
+        function editProduct(id) {
+            var product = products.find(function(p) { return p.id === id; });
+            if (!product) return;
+            document.getElementById('prodId').value = product.id;
+            document.getElementById('productModalTitle').textContent = 'Editar Producto';
+            document.getElementById('prodName').value = product.name;
+            document.getElementById('prodSku').value = product.sku;
+            document.getElementById('prodCategory').value = product.categoria;
+            document.getElementById('prodCost').value = product.costo;
+            document.getElementById('prodPrice').value = product.precioVenta;
+            calculateProductMargin();
+            if (product.imagen) {
+                document.getElementById('productImagePreview').innerHTML = '<img src="' + product.imagen + '" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">';
+            } else {
+                document.getElementById('productImagePreview').innerHTML = '<span style="color: #9ca3af; font-size: 12px;">📷</span>';
+            }
+            document.getElementById('productModal').classList.add('active');
+        }
+        
+        function calculateProductMargin() {
+            var cost = parseFloat(document.getElementById('prodCost').value) || 0;
+            var price = parseFloat(document.getElementById('prodPrice').value) || 0;
+            if (price > 0 && cost > 0) {
+                var margin = ((price - cost) / price * 100).toFixed(2);
+                document.getElementById('prodMarginDisplay').value = margin + '%';
+            } else {
+                document.getElementById('prodMarginDisplay').value = '';
+            }
+        }
+
+        function previewProductImage(event) {
+            var file = event.target.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('La imagen no debe superar 2MB');
+                    event.target.value = '';
+                    return;
+                }
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('productImagePreview').innerHTML = '<img src="' + e.target.result + '" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function closeProductModal() { document.getElementById('productModal').classList.remove('active'); }
+
+        function saveProduct() {
+            var prodId = document.getElementById('prodId').value;
+            var name = document.getElementById('prodName').value.trim();
+            var sku = document.getElementById('prodSku').value.trim();
+            var cost = parseFloat(document.getElementById('prodCost').value);
+            var price = parseFloat(document.getElementById('prodPrice').value);
+            if (!name || !sku || !cost || cost <= 0 || !price || price <= 0) { alert('Complete todos los campos obligatorios'); return; }
+            if (price <= cost) { alert('El precio de venta debe ser mayor al costo unitario'); return; }
+            
+            var imageData = '';
+            var previewImg = document.getElementById('productImagePreview').querySelector('img');
+            if (previewImg) {
+                imageData = previewImg.src;
+            }
+            
+            var productData = {
+                name: name,
+                sku: sku,
+                categoria: document.getElementById('prodCategory').value.trim() || 'Sin categoría',
+                costo: cost,
+                precioVenta: price,
+                imagen: imageData
+            };
+            
+            if (prodId) {
+                var index = products.findIndex(function(p) { return p.id == prodId; });
+                if (index !== -1) {
+                    products[index] = Object.assign({ id: parseInt(prodId) }, productData);
+                }
+            } else {
+                products.push(Object.assign({ id: Date.now() }, productData));
+            }
+            
+            saveData();
+            closeProductModal();
+            changePage('products');
+        }
+
+        function deleteProduct(id) {
+            var product = products.find(function(p) { return p.id === id; });
+            if (!product) return;
+            var hasTransactions = transactions.some(function(t) { return t.producto === product.name; });
+            if (hasTransactions) { alert('No se puede eliminar: tiene transacciones'); return; }
+            if (confirm('¿Eliminar producto?')) { products = products.filter(function(p) { return p.id !== id; }); saveData(); renderProducts(); }
+        }
+
+        function exportToExcel() {
+            var wb = XLSX.utils.book_new();
+            var txData = [['Fecha', 'Producto', 'FB Principal', 'FB Retargeting', 'Google', 'TikTok', 'Instagram', 'Total Ads', 'Unidades', 'Costo Prod', 'Facturación', 'Utilidad', 'Margen', 'ROAS']];
+            transactions.forEach(function(t) {
+                var m = calcMetrics(t);
+                if (m) txData.push([t.fecha, t.producto, t.gastoPublicidad.fb_main || 0, t.gastoPublicidad.fb_retarg || 0, t.gastoPublicidad.google || 0, t.gastoPublicidad.tiktok || 0, t.gastoPublicidad.instagram || 0, m.totalAds, t.unidadesVendidas, m.costoProd, t.facturacionShopify, m.utilidad, m.margen, m.roas]);
+            });
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(txData), 'Transacciones');
+            XLSX.writeFile(wb, 'Reporte_' + new Date().toISOString().split('T')[0] + '.xlsx');
+        }
+
+        window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.classList.remove('active'); }
+    </script>
+</body>
+</html>
