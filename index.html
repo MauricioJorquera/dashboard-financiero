@@ -141,8 +141,21 @@
     <div id="loginScreen" class="login-container">
         <div class="login-box">
             <div class="login-header">
-                <h1>Analytics Dashboard</h1>
-                <p>Sistema de Business Intelligence</p>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 40px;">
+                    <div style="flex: 0 0 auto;">
+                        <div style="width: 75px; height: 75px; background: #1a1a1a; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2); padding: 14px;">
+                            <div style="color: white; font-weight: 700; font-size: 14px; font-family: 'Segoe UI', sans-serif; line-height: 1.2; margin-bottom: 4px; white-space: nowrap;">
+                                <span style="font-style: italic; font-weight: 300;">ecom</span><span style="font-weight: 900;">K&M</span>
+                            </div>
+                            <div style="color: #a0a0a0; font-size: 5px; letter-spacing: 0.6px; font-weight: 500; text-transform: uppercase; line-height: 1.3; text-align: center; margin-top: 2px;">ECOMMERCE &<br>MARKETING</div>
+                            <div style="color: #707070; font-size: 4.5px; letter-spacing: 0.5px; font-weight: 400; margin-top: 2px;">ESTD 2025</div>
+                        </div>
+                    </div>
+                    <div style="text-align: left;">
+                        <h1 style="margin: 0 0 4px 0;">EcomK&M</h1>
+                        <p style="margin: 0;">Sistema de Business Intelligence</p>
+                    </div>
+                </div>
             </div>
             <div id="errorMessage" class="error-message">Credenciales incorrectas</div>
             <form onsubmit="login(event)">
@@ -168,6 +181,7 @@
                 <button class="nav-tab" onclick="changePage('transactions')">Transacciones</button>
                 <button class="nav-tab" onclick="changePage('expenses')">Otros Gastos</button>
                 <button class="nav-tab" onclick="changePage('products')">Productos</button>
+                <button class="nav-tab" onclick="changePage('adaccounts')">Cuentas Ads</button>
             </nav>
         </header>
 
@@ -179,6 +193,8 @@
                     <option value="yesterday">Ayer</option>
                     <option value="week">Últimos 7 días</option>
                     <option value="month">Último mes</option>
+                    <option value="3months">Últimos 3 meses</option>
+                    <option value="6months">Últimos 6 meses</option>
                 </select>
             </div>
             
@@ -223,6 +239,14 @@
                             <div class="chart-subtitle">Rentabilidad comparada</div>
                         </div>
                         <canvas id="marginsChart"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <div class="chart-title">Performance de Cuentas</div>
+                            <div class="chart-subtitle">ROAS por cuenta publicitaria</div>
+                        </div>
+                        <canvas id="accountsPerformanceChart"></canvas>
                     </div>
                 </div>
                 <div class="data-table">
@@ -296,6 +320,74 @@
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;" id="productsGrid"></div>
             </div>
+
+            <div id="adaccountsPage" class="page-content">
+                <div style="max-width: 1400px; margin: 0 auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                        <div>
+                            <h2 style="font-size: 28px; font-weight: 700; color: #111827; margin-bottom: 8px;">Cuentas Publicitarias</h2>
+                            <p style="font-size: 15px; color: #6b7280;">Gestión de cuentas de inversión publicitaria</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="openAdAccountModal()" style="padding: 12px 24px; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 18px;">+</span> Nueva Cuenta
+                        </button>
+                    </div>
+
+                    <div class="data-table" style="margin-bottom: 30px;">
+                        <div style="overflow-x: auto;">
+                            <table id="adAccountsTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 250px;">Nombre de Cuenta</th>
+                                        <th style="width: 200px;">ID de Cuenta</th>
+                                        <th style="width: 150px;">Canal</th>
+                                        <th style="width: 100px;">Estado</th>
+                                        <th style="width: 120px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; padding: 60px 20px; color: #9ca3af;">
+                                            <div style="font-size: 48px; margin-bottom: 16px;">📢</div>
+                                            <div style="font-size: 16px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">No hay cuentas registradas</div>
+                                            <div style="font-size: 14px; color: #9ca3af;">Comienza agregando tu primera cuenta publicitaria</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="data-table">
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="font-size: 18px; font-weight: 600; color: #111827;">Performance por Cuenta</h3>
+                            <p style="font-size: 13px; color: #6b7280; margin-top: 4px;">Análisis de rendimiento publicitario</p>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table id="adAccountsPerformanceTable">
+                                <thead>
+                                    <tr>
+                                        <th>Cuenta</th>
+                                        <th>Canal</th>
+                                        <th class="text-right">Gasto Total</th>
+                                        <th class="text-right">Ventas Generadas</th>
+                                        <th class="text-right">ROAS</th>
+                                        <th class="text-right">Transacciones</th>
+                                        <th>Productos</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; padding: 40px 20px; color: #9ca3af;">
+                                            <div style="font-size: 14px;">No hay datos de performance disponibles</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -316,13 +408,9 @@
                 </div>
                 <div class="form-row full">
                     <div>
-                        <label class="form-label">Inversión Publicitaria por Canal (CLP)</label>
-                        <div class="ad-accounts-grid">
-                            <div><label class="form-label" style="text-transform: none; font-size: 12px;">Facebook Principal</label><input type="number" id="ad_fb_main" class="form-control" placeholder="0" min="0"></div>
-                            <div><label class="form-label" style="text-transform: none; font-size: 12px;">Facebook Retargeting</label><input type="number" id="ad_fb_retarg" class="form-control" placeholder="0" min="0"></div>
-                            <div><label class="form-label" style="text-transform: none; font-size: 12px;">Google Ads</label><input type="number" id="ad_google" class="form-control" placeholder="0" min="0"></div>
-                            <div><label class="form-label" style="text-transform: none; font-size: 12px;">TikTok Ads</label><input type="number" id="ad_tiktok" class="form-control" placeholder="0" min="0"></div>
-                            <div><label class="form-label" style="text-transform: none; font-size: 12px;">Instagram Ads</label><input type="number" id="ad_instagram" class="form-control" placeholder="0" min="0"></div>
+                        <label class="form-label">Inversión Publicitaria por Cuenta (CLP)</label>
+                        <div id="adAccountsInputs" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+                            <p style="color: #9ca3af; font-size: 13px; grid-column: 1 / -1;">Primero crea cuentas publicitarias en la pestaña "Cuentas Ads"</p>
                         </div>
                     </div>
                 </div>
@@ -410,6 +498,53 @@
         </div>
     </div>
 
+    <div id="adAccountModal" class="modal">
+        <div class="modal-dialog" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="adAccountModalTitle">Nueva Cuenta Publicitaria</h3>
+                <button class="modal-close" onclick="closeAdAccountModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="adAccountId" value="">
+                <div class="form-row">
+                    <div style="grid-column: 1 / -1;">
+                        <label class="form-label">Nombre de la Cuenta</label>
+                        <input type="text" id="adAccountName" class="form-control" placeholder="Ej: Unlimit 2 (TheBixCL)" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">ID de Cuenta</label>
+                        <input type="text" id="adAccountAdId" class="form-control" placeholder="Ej: 176172114762" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Canal Publicitario</label>
+                        <select id="adAccountChannel" class="form-control" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="Google">Google Ads</option>
+                            <option value="TikTok">TikTok</option>
+                            <option value="Instagram">Instagram</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Estado</label>
+                        <select id="adAccountStatus" class="form-control">
+                            <option value="true">Activa</option>
+                            <option value="false">Inactiva</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeAdAccountModal()" style="background: #9ca3af; color: white;">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveAdAccount()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
@@ -432,10 +567,11 @@
     </script>
 
     <script>
-        var CORRECT_PASSWORD = 'Thebix2025CL';
+        var CORRECT_PASSWORD = 'MK_Contabilidad2025';
         var products = [];
         var transactions = [];
         var expenses = [];
+        var adAccounts = [];
         var charts = {};
 
         function login(event) {
@@ -468,6 +604,7 @@
                 var savedProducts = localStorage.getItem('analyticsProducts');
                 var savedTransactions = localStorage.getItem('analyticsTransactions');
                 var savedExpenses = localStorage.getItem('analyticsExpenses');
+                var savedAdAccounts = localStorage.getItem('analyticsAdAccounts');
                 
                 products = savedProducts ? JSON.parse(savedProducts) : [
                     { id: 1, name: 'Producto 1', sku: 'PRD-001', costo: 5600, precioVenta: 45000, categoria: 'Categoría A', imagen: '' },
@@ -479,6 +616,7 @@
                     { id: 3, fecha: '2025-01-12', producto: 'Producto 1', gastoPublicidad: { fb_main: 900000, fb_retarg: 500000, google: 700000, tiktok: 350000, instagram: 550000 }, unidadesVendidas: 195, facturacionShopify: 8775000, notas: '' }
                 ];
                 expenses = savedExpenses ? JSON.parse(savedExpenses) : [];
+                adAccounts = savedAdAccounts ? JSON.parse(savedAdAccounts) : [];
                 saveData();
             } catch (error) {
                 console.error('Error loading data:', error);
@@ -490,6 +628,7 @@
                 localStorage.setItem('analyticsProducts', JSON.stringify(products));
                 localStorage.setItem('analyticsTransactions', JSON.stringify(transactions));
                 localStorage.setItem('analyticsExpenses', JSON.stringify(expenses));
+                localStorage.setItem('analyticsAdAccounts', JSON.stringify(adAccounts));
             } catch (error) {
                 console.error('Error saving data:', error);
             }
@@ -502,7 +641,21 @@
         function calcMetrics(tx) {
             var prod = products.find(function(p) { return p.name === tx.producto; });
             if (!prod) return null;
-            var totalAds = Object.values(tx.gastoPublicidad).reduce(function(sum, val) { return sum + (parseFloat(val) || 0); }, 0);
+            
+            var totalAds = 0;
+            
+            // Calcular desde nueva estructura gastoPorCuenta
+            if (tx.gastoPorCuenta && tx.gastoPorCuenta.length > 0) {
+                totalAds = tx.gastoPorCuenta.reduce(function(sum, gasto) { 
+                    return sum + (parseFloat(gasto.monto) || 0); 
+                }, 0);
+            } else if (tx.gastoPublicidad) {
+                // Compatibilidad con estructura antigua
+                totalAds = Object.values(tx.gastoPublicidad).reduce(function(sum, val) { 
+                    return sum + (parseFloat(val) || 0); 
+                }, 0);
+            }
+            
             var costoProd = prod.costo * tx.unidadesVendidas;
             var costoTotal = costoProd + totalAds;
             var utilidad = tx.facturacionShopify - costoTotal;
@@ -538,6 +691,16 @@
                     monthAgo.setMonth(monthAgo.getMonth() - 1);
                     return txDate >= monthAgo && txDate <= today;
                 }
+                if (filter === '3months') {
+                    var threeMonthsAgo = new Date(today);
+                    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+                    return txDate >= threeMonthsAgo && txDate <= today;
+                }
+                if (filter === '6months') {
+                    var sixMonthsAgo = new Date(today);
+                    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+                    return txDate >= sixMonthsAgo && txDate <= today;
+                }
                 return true;
             });
         }
@@ -566,6 +729,7 @@
             updateChannelsChart();
             updateProductsChart();
             updateMarginsChart();
+            updateAccountsPerformanceChart();
             updateSummaryTable();
         }
 
@@ -656,6 +820,108 @@
             });
         }
 
+        function updateAccountsPerformanceChart() {
+            var ctx = document.getElementById('accountsPerformanceChart');
+            if (!ctx) return;
+            if (charts.accountsPerformance) charts.accountsPerformance.destroy();
+            
+            var accountMetrics = calcAccountsPerformance();
+            var accountNames = [];
+            var roasData = [];
+            var colors = [];
+            
+            var channelColors = {
+                'Facebook': '#1877f2',
+                'Google': '#ea4335',
+                'TikTok': '#000000',
+                'Instagram': '#e4405f'
+            };
+            
+            accountMetrics.forEach(function(acc) {
+                accountNames.push(acc.nombre);
+                roasData.push(acc.roas);
+                colors.push(channelColors[acc.canal] || '#667eea');
+            });
+            
+            if (accountNames.length === 0) {
+                accountNames = ['Sin datos'];
+                roasData = [0];
+                colors = ['#e5e7eb'];
+            }
+            
+            charts.accountsPerformance = new Chart(ctx, {
+                type: 'bar',
+                data: { 
+                    labels: accountNames, 
+                    datasets: [{ 
+                        label: 'ROAS', 
+                        data: roasData, 
+                        backgroundColor: colors, 
+                        borderRadius: 8 
+                    }] 
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: true, 
+                    plugins: { legend: { display: false } }, 
+                    scales: { y: { beginAtZero: true } } 
+                }
+            });
+        }
+
+        function calcAccountsPerformance() {
+            var accountMetrics = {};
+            
+            filterByDate().forEach(function(t) {
+                if (!t.gastoPorCuenta || t.gastoPorCuenta.length === 0) return;
+                
+                var m = calcMetrics(t);
+                if (!m) return;
+                
+                t.gastoPorCuenta.forEach(function(g) {
+                    if (!accountMetrics[g.cuentaId]) {
+                        accountMetrics[g.cuentaId] = {
+                            gastoTotal: 0,
+                            ventasGeneradas: 0,
+                            transacciones: 0,
+                            productos: {}
+                        };
+                    }
+                    
+                    var totalAdsTransaction = m.totalAds;
+                    var proporcionCuenta = totalAdsTransaction > 0 ? g.monto / totalAdsTransaction : 0;
+                    var ventasAtribuidas = t.facturacionShopify * proporcionCuenta;
+                    
+                    accountMetrics[g.cuentaId].gastoTotal += g.monto;
+                    accountMetrics[g.cuentaId].ventasGeneradas += ventasAtribuidas;
+                    accountMetrics[g.cuentaId].transacciones += 1;
+                    accountMetrics[g.cuentaId].productos[t.producto] = true;
+                });
+            });
+            
+            var result = [];
+            Object.keys(accountMetrics).forEach(function(cuentaId) {
+                var cuenta = adAccounts.find(function(a) { return a.id == cuentaId; });
+                if (!cuenta) return;
+                
+                var metrics = accountMetrics[cuentaId];
+                var roas = metrics.gastoTotal > 0 ? (metrics.ventasGeneradas / metrics.gastoTotal) : 0;
+                
+                result.push({
+                    id: cuenta.id,
+                    nombre: cuenta.nombre,
+                    canal: cuenta.canal,
+                    gastoTotal: metrics.gastoTotal,
+                    ventasGeneradas: metrics.ventasGeneradas,
+                    roas: parseFloat(roas.toFixed(2)),
+                    transacciones: metrics.transacciones,
+                    productos: Object.keys(metrics.productos)
+                });
+            });
+            
+            return result.sort(function(a, b) { return b.roas - a.roas; });
+        }
+
         function updateSummaryTable() {
             var productMetrics = {};
             filterByDate().forEach(function(t) {
@@ -676,11 +942,26 @@
         }
 
         function renderTransactions() {
-            var html = '<thead><tr><th>Fecha</th><th>Producto</th><th class="text-right">Unidades</th><th class="text-right">Inversión Ads</th><th class="text-right">Costo Producto</th><th class="text-right">Facturación</th><th class="text-right">Utilidad</th><th class="text-right">Margen</th><th class="text-right">ROAS</th><th>Acciones</th></tr></thead><tbody>';
+            var html = '<thead><tr><th>Fecha</th><th>Producto</th><th class="text-right">Unidades</th><th>Cuentas Usadas</th><th class="text-right">Inversión Ads</th><th class="text-right">Costo Producto</th><th class="text-right">Facturación</th><th class="text-right">Utilidad</th><th class="text-right">Margen</th><th class="text-right">ROAS</th><th>Acciones</th></tr></thead><tbody>';
             transactions.forEach(function(t) {
                 var m = calcMetrics(t);
                 if (!m) return;
-                html += '<tr><td>' + new Date(t.fecha + 'T00:00:00').toLocaleDateString('es-CL') + '</td><td><strong>' + t.producto + '</strong>' + (t.notas ? '<br><small style="color: #6b7280;">' + t.notas + '</small>' : '') + '</td><td class="text-right">' + t.unidadesVendidas + '</td><td class="text-right">' + formatCurrency(m.totalAds) + '</td><td class="text-right">' + formatCurrency(m.costoProd) + '</td><td class="text-right"><strong>' + formatCurrency(t.facturacionShopify) + '</strong></td><td class="text-right" style="color: ' + (m.utilidad >= 0 ? '#10b981' : '#ef4444') + '; font-weight: 600;">' + formatCurrency(m.utilidad) + '</td><td class="text-right"><span class="badge ' + (m.margen >= 30 ? 'badge-success' : m.margen >= 15 ? 'badge-warning' : 'badge-danger') + '">' + m.margen + '%</span></td><td class="text-right"><span class="badge ' + (m.roas >= 3 ? 'badge-success' : m.roas >= 2 ? 'badge-warning' : 'badge-danger') + '">' + m.roas + 'x</span></td><td><button class="btn" onclick="deleteTransaction(' + t.id + ')" style="background: #ef4444; color: white; padding: 6px 12px; font-size: 12px;">Eliminar</button></td></tr>';
+                
+                // Mostrar cuentas usadas
+                var cuentasHtml = '';
+                if (t.gastoPorCuenta && t.gastoPorCuenta.length > 0) {
+                    cuentasHtml = t.gastoPorCuenta.map(function(g) {
+                        var cuenta = adAccounts.find(function(a) { return a.id === g.cuentaId; });
+                        if (cuenta) {
+                            return '<div style="font-size: 11px; color: #6b7280; margin: 2px 0;">' + cuenta.nombre + ': ' + formatCurrency(g.monto) + '</div>';
+                        }
+                        return '';
+                    }).join('');
+                } else {
+                    cuentasHtml = '<span style="font-size: 11px; color: #9ca3af;">Sin detalle</span>';
+                }
+                
+                html += '<tr><td>' + new Date(t.fecha + 'T00:00:00').toLocaleDateString('es-CL') + '</td><td><strong>' + t.producto + '</strong>' + (t.notas ? '<br><small style="color: #6b7280;">' + t.notas + '</small>' : '') + '</td><td class="text-right">' + t.unidadesVendidas + '</td><td>' + cuentasHtml + '</td><td class="text-right">' + formatCurrency(m.totalAds) + '</td><td class="text-right">' + formatCurrency(m.costoProd) + '</td><td class="text-right"><strong>' + formatCurrency(t.facturacionShopify) + '</strong></td><td class="text-right" style="color: ' + (m.utilidad >= 0 ? '#10b981' : '#ef4444') + '; font-weight: 600;">' + formatCurrency(m.utilidad) + '</td><td class="text-right"><span class="badge ' + (m.margen >= 30 ? 'badge-success' : m.margen >= 15 ? 'badge-warning' : 'badge-danger') + '">' + m.margen + '%</span></td><td class="text-right"><span class="badge ' + (m.roas >= 3 ? 'badge-success' : m.roas >= 2 ? 'badge-warning' : 'badge-danger') + '">' + m.roas + 'x</span></td><td><button class="btn" onclick="deleteTransaction(' + t.id + ')" style="background: #ef4444; color: white; padding: 6px 12px; font-size: 12px;">Eliminar</button></td></tr>';
             });
             html += '</tbody>';
             document.getElementById('transactionsTable').innerHTML = html;
@@ -719,6 +1000,7 @@
             else if (page === 'transactions') { document.getElementById('transactionsPage').classList.add('active'); document.querySelectorAll('.nav-tab')[1].classList.add('active'); renderTransactions(); }
             else if (page === 'expenses') { document.getElementById('expensesPage').classList.add('active'); document.querySelectorAll('.nav-tab')[2].classList.add('active'); renderExpenses(); }
             else if (page === 'products') { document.getElementById('productsPage').classList.add('active'); document.querySelectorAll('.nav-tab')[3].classList.add('active'); renderProducts(); }
+            else if (page === 'adaccounts') { document.getElementById('adaccountsPage').classList.add('active'); document.querySelectorAll('.nav-tab')[4].classList.add('active'); renderAdAccounts(); }
         }
 
         function openExpenseModal() {
@@ -809,8 +1091,38 @@
         function openTransactionModal() {
             document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
             document.getElementById('txProduct').innerHTML = products.map(function(p) { return '<option value="' + p.name + '">' + p.name + '</option>'; }).join('');
-            var fields = ['txUnits', 'txRevenue', 'ad_fb_main', 'ad_fb_retarg', 'ad_google', 'ad_tiktok', 'ad_instagram', 'txNotes'];
-            fields.forEach(function(id) { document.getElementById(id).value = ''; });
+            document.getElementById('txUnits').value = '';
+            document.getElementById('txRevenue').value = '';
+            document.getElementById('txNotes').value = '';
+            
+            // Generar inputs dinámicos para cuentas publicitarias
+            var adAccountsHtml = '';
+            if (adAccounts.length === 0) {
+                adAccountsHtml = '<p style="color: #9ca3af; font-size: 13px; grid-column: 1 / -1;">Primero crea cuentas publicitarias en la pestaña "Cuentas Ads"</p>';
+            } else {
+                var activeAccounts = adAccounts.filter(function(acc) { return acc.activa; });
+                if (activeAccounts.length === 0) {
+                    adAccountsHtml = '<p style="color: #9ca3af; font-size: 13px; grid-column: 1 / -1;">No hay cuentas activas disponibles</p>';
+                } else {
+                    activeAccounts.forEach(function(acc) {
+                        var channelColors = {
+                            'Facebook': '#1877f2',
+                            'Google': '#ea4335',
+                            'TikTok': '#000000',
+                            'Instagram': '#e4405f'
+                        };
+                        var color = channelColors[acc.canal] || '#667eea';
+                        adAccountsHtml += '<div>';
+                        adAccountsHtml += '<label class="form-label" style="text-transform: none; font-size: 12px; display: flex; align-items: center; gap: 6px;">';
+                        adAccountsHtml += '<span style="width: 8px; height: 8px; border-radius: 50%; background: ' + color + ';"></span>';
+                        adAccountsHtml += acc.nombre + '</label>';
+                        adAccountsHtml += '<input type="number" id="adaccount_' + acc.id + '" class="form-control" placeholder="0" min="0" data-account-id="' + acc.id + '">';
+                        adAccountsHtml += '</div>';
+                    });
+                }
+            }
+            document.getElementById('adAccountsInputs').innerHTML = adAccountsHtml;
+            
             document.getElementById('transactionModal').classList.add('active');
         }
 
@@ -821,16 +1133,32 @@
             var units = parseFloat(document.getElementById('txUnits').value);
             var revenue = parseFloat(document.getElementById('txRevenue').value);
             if (!date || !units || units <= 0 || !revenue || revenue <= 0) { alert('Complete todos los campos obligatorios'); return; }
+            
+            // Recopilar gastos por cuenta
+            var gastoPorCuenta = [];
+            adAccounts.filter(function(acc) { return acc.activa; }).forEach(function(acc) {
+                var input = document.getElementById('adaccount_' + acc.id);
+                if (input) {
+                    var monto = parseFloat(input.value) || 0;
+                    if (monto > 0) {
+                        gastoPorCuenta.push({
+                            cuentaId: acc.id,
+                            monto: monto
+                        });
+                    }
+                }
+            });
+            
             transactions.push({
-                id: Date.now(), fecha: date, producto: document.getElementById('txProduct').value,
-                gastoPublicidad: {
-                    fb_main: parseFloat(document.getElementById('ad_fb_main').value) || 0,
-                    fb_retarg: parseFloat(document.getElementById('ad_fb_retarg').value) || 0,
-                    google: parseFloat(document.getElementById('ad_google').value) || 0,
-                    tiktok: parseFloat(document.getElementById('ad_tiktok').value) || 0,
-                    instagram: parseFloat(document.getElementById('ad_instagram').value) || 0
-                },
-                unidadesVendidas: units, facturacionShopify: revenue, notas: document.getElementById('txNotes').value
+                id: Date.now(), 
+                fecha: date, 
+                producto: document.getElementById('txProduct').value,
+                gastoPorCuenta: gastoPorCuenta,
+                // Mantener estructura antigua para compatibilidad
+                gastoPublicidad: { fb_main: 0, fb_retarg: 0, google: 0, tiktok: 0, instagram: 0 },
+                unidadesVendidas: units, 
+                facturacionShopify: revenue, 
+                notas: document.getElementById('txNotes').value
             });
             saveData(); closeTransactionModal(); changePage('transactions'); updateAllCharts();
         }
@@ -951,6 +1279,173 @@
             });
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(txData), 'Transacciones');
             XLSX.writeFile(wb, 'Reporte_' + new Date().toISOString().split('T')[0] + '.xlsx');
+        }
+
+        function renderAdAccounts() {
+            var html = '';
+            
+            if (adAccounts.length === 0) {
+                html = '<thead><tr><th style="width: 250px;">Nombre de Cuenta</th><th style="width: 200px;">ID de Cuenta</th><th style="width: 150px;">Canal</th><th style="width: 100px;">Estado</th><th style="width: 120px;">Acciones</th></tr></thead>';
+                html += '<tbody><tr><td colspan="5" style="text-align: center; padding: 60px 20px; color: #9ca3af;">';
+                html += '<div style="font-size: 48px; margin-bottom: 16px;">📢</div>';
+                html += '<div style="font-size: 16px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">No hay cuentas registradas</div>';
+                html += '<div style="font-size: 14px; color: #9ca3af;">Comienza agregando tu primera cuenta publicitaria</div>';
+                html += '</td></tr></tbody>';
+            } else {
+                html = '<thead><tr><th style="width: 250px;">Nombre de Cuenta</th><th style="width: 200px;">ID de Cuenta</th><th style="width: 150px;">Canal</th><th style="width: 100px;">Estado</th><th style="width: 120px;">Acciones</th></tr></thead><tbody>';
+                
+                adAccounts.forEach(function(acc) {
+                    var channelColors = {
+                        'Facebook': '#1877f2',
+                        'Google': '#ea4335',
+                        'TikTok': '#000000',
+                        'Instagram': '#e4405f'
+                    };
+                    var statusBadge = acc.activa ? '<span class="badge badge-success">Activa</span>' : '<span class="badge badge-danger">Inactiva</span>';
+                    
+                    html += '<tr>';
+                    html += '<td><strong style="color: #111827;">' + acc.nombre + '</strong></td>';
+                    html += '<td><span style="font-family: monospace; color: #6b7280; font-size: 13px;">' + acc.adAccountId + '</span></td>';
+                    html += '<td><span style="background: ' + (channelColors[acc.canal] || '#667eea') + '; color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">' + acc.canal + '</span></td>';
+                    html += '<td>' + statusBadge + '</td>';
+                    html += '<td><button class="btn" onclick="editAdAccount(' + acc.id + ')" style="background: #667eea; color: white; padding: 6px 12px; font-size: 12px; margin-right: 4px;">Editar</button><button class="btn" onclick="deleteAdAccount(' + acc.id + ')" style="background: #ef4444; color: white; padding: 6px 12px; font-size: 12px;">Eliminar</button></td>';
+                    html += '</tr>';
+                });
+                
+                html += '</tbody>';
+            }
+            
+            document.getElementById('adAccountsTable').innerHTML = html;
+            
+            // Renderizar tabla de performance
+            renderAdAccountsPerformance();
+        }
+
+        function renderAdAccountsPerformance() {
+            var performanceData = calcAccountsPerformance();
+            var html = '';
+            
+            if (performanceData.length === 0) {
+                html = '<thead><tr><th>Cuenta</th><th>Canal</th><th class="text-right">Gasto Total</th><th class="text-right">Ventas Generadas</th><th class="text-right">ROAS</th><th class="text-right">Transacciones</th><th>Productos</th></tr></thead>';
+                html += '<tbody><tr><td colspan="7" style="text-align: center; padding: 40px 20px; color: #9ca3af;">';
+                html += '<div style="font-size: 14px;">No hay datos de performance disponibles</div>';
+                html += '<div style="font-size: 12px; margin-top: 4px;">Crea transacciones con gastos asignados a cuentas específicas</div>';
+                html += '</td></tr></tbody>';
+            } else {
+                html = '<thead><tr><th>Cuenta</th><th>Canal</th><th class="text-right">Gasto Total</th><th class="text-right">Ventas Generadas</th><th class="text-right">ROAS</th><th class="text-right">Transacciones</th><th>Productos</th></tr></thead><tbody>';
+                
+                performanceData.forEach(function(acc) {
+                    var channelColors = {
+                        'Facebook': '#1877f2',
+                        'Google': '#ea4335',
+                        'TikTok': '#000000',
+                        'Instagram': '#e4405f'
+                    };
+                    
+                    var roasBadge = acc.roas >= 3 ? 'badge-success' : acc.roas >= 2 ? 'badge-warning' : 'badge-danger';
+                    var productosStr = acc.productos.length > 2 ? acc.productos.slice(0, 2).join(', ') + ' +' + (acc.productos.length - 2) : acc.productos.join(', ');
+                    
+                    html += '<tr>';
+                    html += '<td><strong style="color: #111827;">' + acc.nombre + '</strong></td>';
+                    html += '<td><span style="background: ' + (channelColors[acc.canal] || '#667eea') + '; color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">' + acc.canal + '</span></td>';
+                    html += '<td class="text-right"><strong>' + formatCurrency(acc.gastoTotal) + '</strong></td>';
+                    html += '<td class="text-right"><strong style="color: #10b981;">' + formatCurrency(acc.ventasGeneradas) + '</strong></td>';
+                    html += '<td class="text-right"><span class="badge ' + roasBadge + '" style="font-size: 14px; padding: 6px 12px;">' + acc.roas + 'x</span></td>';
+                    html += '<td class="text-right">' + acc.transacciones + '</td>';
+                    html += '<td><span style="font-size: 12px; color: #6b7280;">' + productosStr + '</span></td>';
+                    html += '</tr>';
+                });
+                
+                html += '</tbody>';
+                
+                var totales = performanceData.reduce(function(acc, item) {
+                    return {
+                        gastoTotal: acc.gastoTotal + item.gastoTotal,
+                        ventasGeneradas: acc.ventasGeneradas + item.ventasGeneradas,
+                        transacciones: acc.transacciones + item.transacciones
+                    };
+                }, { gastoTotal: 0, ventasGeneradas: 0, transacciones: 0 });
+                
+                var roasPromedio = totales.gastoTotal > 0 ? (totales.ventasGeneradas / totales.gastoTotal).toFixed(2) : 0;
+                
+                html += '<tfoot><tr style="background: #f9fafb; font-weight: 700;">';
+                html += '<td colspan="2" style="text-align: right; padding: 16px; font-size: 15px;">TOTALES:</td>';
+                html += '<td class="text-right" style="padding: 16px;"><span style="font-size: 16px;">' + formatCurrency(totales.gastoTotal) + '</span></td>';
+                html += '<td class="text-right" style="padding: 16px;"><span style="color: #10b981; font-size: 16px;">' + formatCurrency(totales.ventasGeneradas) + '</span></td>';
+                html += '<td class="text-right" style="padding: 16px;"><span style="font-size: 16px;">' + roasPromedio + 'x</span></td>';
+                html += '<td class="text-right" style="padding: 16px;">' + totales.transacciones + '</td>';
+                html += '<td></td>';
+                html += '</tr></tfoot>';
+            }
+            
+            document.getElementById('adAccountsPerformanceTable').innerHTML = html;
+        }
+
+        function openAdAccountModal() {
+            document.getElementById('adAccountId').value = '';
+            document.getElementById('adAccountModalTitle').textContent = 'Nueva Cuenta Publicitaria';
+            document.getElementById('adAccountName').value = '';
+            document.getElementById('adAccountAdId').value = '';
+            document.getElementById('adAccountChannel').value = '';
+            document.getElementById('adAccountStatus').value = 'true';
+            document.getElementById('adAccountModal').classList.add('active');
+        }
+
+        function closeAdAccountModal() {
+            document.getElementById('adAccountModal').classList.remove('active');
+        }
+
+        function saveAdAccount() {
+            var accId = document.getElementById('adAccountId').value;
+            var nombre = document.getElementById('adAccountName').value.trim();
+            var adAccountId = document.getElementById('adAccountAdId').value.trim();
+            var canal = document.getElementById('adAccountChannel').value;
+            var activa = document.getElementById('adAccountStatus').value === 'true';
+            
+            if (!nombre || !adAccountId || !canal) {
+                alert('Complete todos los campos obligatorios');
+                return;
+            }
+            
+            if (accId) {
+                var index = adAccounts.findIndex(function(a) { return a.id == accId; });
+                if (index !== -1) {
+                    adAccounts[index] = { id: parseInt(accId), nombre: nombre, adAccountId: adAccountId, canal: canal, activa: activa };
+                }
+            } else {
+                adAccounts.push({
+                    id: Date.now(),
+                    nombre: nombre,
+                    adAccountId: adAccountId,
+                    canal: canal,
+                    activa: activa
+                });
+            }
+            
+            saveData();
+            closeAdAccountModal();
+            changePage('adaccounts');
+        }
+
+        function editAdAccount(id) {
+            var account = adAccounts.find(function(a) { return a.id === id; });
+            if (!account) return;
+            
+            document.getElementById('adAccountId').value = account.id;
+            document.getElementById('adAccountModalTitle').textContent = 'Editar Cuenta Publicitaria';
+            document.getElementById('adAccountName').value = account.nombre;
+            document.getElementById('adAccountAdId').value = account.adAccountId;
+            document.getElementById('adAccountChannel').value = account.canal;
+            document.getElementById('adAccountStatus').value = account.activa ? 'true' : 'false';
+            document.getElementById('adAccountModal').classList.add('active');
+        }
+
+        function deleteAdAccount(id) {
+            if (confirm('¿Eliminar esta cuenta publicitaria?')) {
+                adAccounts = adAccounts.filter(function(a) { return a.id !== id; });
+                saveData();
+                renderAdAccounts();
+            }
         }
 
         window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.classList.remove('active'); }
