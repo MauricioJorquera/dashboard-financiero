@@ -171,7 +171,7 @@
     <div id="appContainer" class="app-container">
         <header class="header">
             <div class="header-top">
-                <h1>SISTEMA DE CONTROL FINANCIERO EMPRESARIAL</h1>
+                <h1>SISTEMA DE CONTROL FINANCIERO</h1>
                 <div class="header-actions">
                     <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
                 </div>
@@ -476,10 +476,20 @@
                     <div><label class="form-label">Fecha</label><input type="date" id="expDate" class="form-control"></div>
                     <div><label class="form-label">Categoría</label>
                         <select id="expCategory" class="form-control">
-                            <option value="Comisiones">Comisiones</option>
-                            <option value="Arriendo">Arriendo</option>
-                            <option value="Servicios">Servicios</option>
+                            <option value="Comisiones Shopify">Comisiones Shopify</option>
+                            <option value="Apps de Shopify">Apps de Shopify</option>
+                            <option value="Email Marketing">Email Marketing (Klaviyo, etc)</option>
+                            <option value="SMS Marketing">SMS Marketing</option>
+                            <option value="Google Workspace">Google Workspace</option>
+                            <option value="Pasarelas de Pago">Pasarelas de Pago</option>
+                            <option value="Envíos y Logística">Envíos y Logística</option>
+                            <option value="Almacenamiento">Almacenamiento</option>
+                            <option value="Herramientas y Software">Herramientas y Software</option>
+                            <option value="Contador/Contabilidad">Contador/Contabilidad</option>
                             <option value="Salarios">Salarios</option>
+                            <option value="Freelancers">Freelancers</option>
+                            <option value="Oficina/Arriendo">Oficina/Arriendo</option>
+                            <option value="Legal y Seguros">Legal y Seguros</option>
                             <option value="Otros">Otros</option>
                         </select>
                     </div>
@@ -1005,7 +1015,7 @@
 
         function openExpenseModal() {
             document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('expCategory').value = 'Comisiones';
+            document.getElementById('expCategory').value = 'Comisiones Shopify';
             document.getElementById('expDescription').value = '';
             document.getElementById('expAmount').value = '';
             document.getElementById('expenseModal').classList.add('active');
@@ -1054,10 +1064,20 @@
                 
                 expenses.forEach(function(e) {
                     var categoryColors = {
-                        'Comisiones': 'badge-warning',
-                        'Arriendo': 'badge-danger',
-                        'Servicios': 'badge-success',
-                        'Salarios': 'badge-warning',
+                        'Comisiones Shopify': 'badge-warning',
+                        'Apps de Shopify': 'badge-success',
+                        'Email Marketing': 'badge-warning',
+                        'SMS Marketing': 'badge-warning',
+                        'Google Workspace': 'badge-success',
+                        'Pasarelas de Pago': 'badge-warning',
+                        'Envíos y Logística': 'badge-danger',
+                        'Almacenamiento': 'badge-danger',
+                        'Herramientas y Software': 'badge-success',
+                        'Contador/Contabilidad': 'badge-warning',
+                        'Salarios': 'badge-danger',
+                        'Freelancers': 'badge-warning',
+                        'Oficina/Arriendo': 'badge-danger',
+                        'Legal y Seguros': 'badge-warning',
                         'Otros': 'badge-danger'
                     };
                     var badgeClass = categoryColors[e.categoria] || 'badge-warning';
